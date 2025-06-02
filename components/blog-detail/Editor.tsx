@@ -1,0 +1,89 @@
+
+'use client';
+
+import { useCallback, useState } from 'react'
+
+import RichTextEditor from 'reactjs-tiptap-editor'
+
+import {
+  BubbleMenuTwitter,
+  BubbleMenuKatex,
+  BubbleMenuExcalidraw,
+  BubbleMenuMermaid,
+  BubbleMenuDrawer
+} from 'reactjs-tiptap-editor/bubble-extra';
+
+import 'reactjs-tiptap-editor/style.css'
+import 'prism-code-editor-lightweight/layout.css';
+import "prism-code-editor-lightweight/themes/github-dark.css"
+import 'katex/dist/katex.min.css'
+import 'easydrawer/styles.css'
+import extensions from '../common/Editor/Extensions';
+
+function debounce(func: any, wait: number) {
+  let timeout: NodeJS.Timeout
+  return function (...args: any[]) {
+    clearTimeout(timeout)
+    // @ts-ignore
+    timeout = setTimeout(() => func.apply(this, args), wait)
+  }
+}
+
+function App() {
+  const [content, setContent] = useState(``)
+
+  const onValueChange = useCallback(
+    debounce((value: any) => {
+      setContent(value)
+    }, 300),
+    [],
+  )
+
+  return (
+    <div
+      className="flex flex-col w-full max-w-screen-lg gap-[24px] mx-[auto] my-0"
+      style={{
+        maxWidth: 1024,
+        margin: '40px auto',
+      }}
+    >
+      <RichTextEditor
+        output="text"
+        dark={false}
+        content={content as any}
+        onChangeContent={onValueChange}
+        extensions={extensions}
+        bubbleMenu={{
+          render({ extensionsNames, editor, disabled }, bubbleDefaultDom) {
+            return <>
+              {bubbleDefaultDom}
+
+              {extensionsNames.includes('twitter') ? <BubbleMenuTwitter disabled={disabled}
+                editor={editor}
+                key="twitter"
+              /> : null}
+              {extensionsNames.includes('katex')  ? <BubbleMenuKatex disabled={disabled}
+                editor={editor}
+                key="katex"
+              /> : null}
+              {extensionsNames.includes('excalidraw')  ? <BubbleMenuExcalidraw disabled={disabled}
+                editor={editor}
+                key="excalidraw"
+              /> : null}
+              {extensionsNames.includes('mermaid')  ? <BubbleMenuMermaid disabled={disabled}
+                editor={editor}
+                key="mermaid"
+              /> : null}
+              {extensionsNames.includes('drawer')  ? <BubbleMenuDrawer disabled={disabled}
+                editor={editor}
+                key="drawer"
+              /> : null}
+            </>
+          },
+        }}
+      />
+    </div>
+  )
+}
+
+export default App

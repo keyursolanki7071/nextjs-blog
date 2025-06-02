@@ -15,7 +15,7 @@ const Navbar = () => {
               </Link>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <NavLink url="https://www.google.com/">Home</NavLink>
+              <NavLink url="/">Home</NavLink>
               <NavLink url="/blog">All Blogs</NavLink>
             </div>
           </div>

@@ -1,8 +1,29 @@
+"use client";
 import Editor from "@/components/blog-detail/Editor";
 import { fetchAllCategories } from "@/services/category";
+import React, { useEffect, useState } from "react";
 
-const Page = async () => {
-  const categories = await fetchAllCategories();
+const Page = () => {
+  const [content, setContent] = useState("");
+  const [categories, setCategories] = useState<any[]>([]);
+  useEffect(() => {
+    fetchAllCategories().then((data) => {
+      setCategories(data ?? []);
+    });
+  }, []);
+
+  const [formData, setFormData] = useState({
+    title: "",
+    slug: "",
+    category: "",
+    tags: "",
+    content: "",
+  });
+
+  const createPost = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log(content);
+  };
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -14,7 +35,7 @@ const Page = async () => {
         </div>
 
         <div className="bg-white shadow-md rounded-lg p-8">
-          <form action="#" method="POST" className="space-y-8">
+          <form onSubmit={createPost} className="space-y-8">
             <div>
               <label
                 htmlFor="title"
@@ -28,6 +49,14 @@ const Page = async () => {
                   id="title"
                   type="text"
                   placeholder="Title"
+                  name="title"
+                  onInput={(e) =>
+                    setFormData({
+                      ...formData,
+                      [e.currentTarget.name]: e.currentTarget.value,
+                    })
+                  }
+                  value={formData.title}
                 />
               </div>
             </div>
@@ -45,6 +74,14 @@ const Page = async () => {
                   id="slug"
                   type="text"
                   placeholder="Slug"
+                  name="slug"
+                  onInput={(e) =>
+                    setFormData({
+                      ...formData,
+                      [e.currentTarget.name]: e.currentTarget.value,
+                    })
+                  }
+                  value={formData.slug}
                 />
               </div>
             </div>
@@ -62,10 +99,19 @@ const Page = async () => {
                     id="category"
                     name="category"
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        [e.currentTarget.name]: e.currentTarget.value,
+                      })
+                    }
+                    value={formData.category}
                   >
                     <option value="">Select a category</option>
                     {categories?.map((category) => (
-                      <option key={category.id} value={category.id}>{category.name}</option>
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -84,6 +130,13 @@ const Page = async () => {
                     id="tags"
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                     placeholder="javascript, react, tutorial (comma separated)"
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        [e.currentTarget.name]: e.currentTarget.value,
+                      })
+                    }
+                    value={formData.tags}
                   />
                 </div>
               </div>
@@ -97,7 +150,7 @@ const Page = async () => {
                 Content
               </label>
               <div className="mt-1">
-                <Editor ></Editor>
+                <Editor content={content} setContent={setContent}></Editor>
               </div>
             </div>
 

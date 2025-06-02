@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useCallback, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import RichTextEditor from 'reactjs-tiptap-editor'
 
@@ -29,14 +29,18 @@ function debounce(func: any, wait: number) {
   }
 }
 
-function App() {
-  const [content, setContent] = useState(``)
+interface EditorProps {
+  content: string;
+  setContent: (value: string) => void;
+}
+
+const Editor: React.FC<EditorProps> = ({content, setContent}) => {
 
   const onValueChange = useCallback(
     debounce((value: any) => {
       setContent(value)
     }, 300),
-    [],
+    [content],
   )
 
   return (
@@ -86,4 +90,4 @@ function App() {
   )
 }
 
-export default App
+export default Editor

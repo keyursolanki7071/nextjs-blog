@@ -19,4 +19,13 @@ const create = async (values: CreateProps) => {
     return data;
 }
 
-export {create};
+const getAll = async () => {
+    const supabase = await createClient();
+    const {data, error} = await supabase.from('posts').select("*");
+    if(error) {
+        throw error.message
+    }
+    return data;
+}
+
+export {create, getAll};

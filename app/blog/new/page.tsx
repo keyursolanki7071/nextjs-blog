@@ -1,30 +1,65 @@
 "use client";
 import Editor from "@/components/blog-detail/Editor";
+import { create } from "@/services/blog";
 import { fetchAllCategories } from "@/services/category";
+import { useFormik } from "formik";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import * as Yup from "yup";
+interface FormValues {
+  title: string;
+  slug: string;
+  category_id: string;
+  tags: string;
+  content: string;
+}
+
+const validationSchema = Yup.object({
+  title: Yup.string().required("Please enter title"),
+  slug: Yup.string().required("Please enter slug"),
+  category_id: Yup.string().required("Please select category"),
+  tags: Yup.string().required("Please enter tags"),
+  content: Yup.string().required("Please enter content"),
+});
 
 const Page = () => {
   const [content, setContent] = useState("");
   const [categories, setCategories] = useState<any[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const router = useRouter();
+
   useEffect(() => {
     fetchAllCategories().then((data) => {
       setCategories(data ?? []);
     });
   }, []);
 
-  const [formData, setFormData] = useState({
-    title: "",
-    slug: "",
-    category: "",
-    tags: "",
-    content: "",
+  useEffect(() => {
+    formik.setFieldValue("content", content);
+  }, [content]);
+
+  const formik = useFormik<FormValues>({
+    initialValues: {
+      title: "",
+      slug: "",
+      category_id: "",
+      tags: "",
+      content: "",
+    },
+    validationSchema,
+    onSubmit: async (values) => {
+      try {
+        setSubmitting(true);
+        await create(values);
+        setSubmitting(false);
+        formik.resetForm();
+        router.push('/blog');
+      } catch (error) {
+        setSubmitting(false);
+        alert(error);
+      }
+    },
   });
-
-  const createPost = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log(content);
-  };
-
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div className="max-w-4xl mx-auto">
@@ -35,13 +70,13 @@ const Page = () => {
         </div>
 
         <div className="bg-white shadow-md rounded-lg p-8">
-          <form onSubmit={createPost} className="space-y-8">
+          <form onSubmit={formik.handleSubmit} className="space-y-8">
             <div>
               <label
                 htmlFor="title"
                 className="block text-sm font-medium text-gray-700"
               >
-                Title
+                Title*
               </label>
               <div className="mt-1">
                 <input
@@ -50,14 +85,12 @@ const Page = () => {
                   type="text"
                   placeholder="Title"
                   name="title"
-                  onInput={(e) =>
-                    setFormData({
-                      ...formData,
-                      [e.currentTarget.name]: e.currentTarget.value,
-                    })
-                  }
-                  value={formData.title}
+                  onChange={formik.handleChange}
+                  value={formik.values.title}
                 />
+                {formik.touched.title && formik.errors.title && (
+                  <div className="text-red-500">{formik.errors.title}</div>
+                )}
               </div>
             </div>
 
@@ -66,7 +99,7 @@ const Page = () => {
                 htmlFor="slug"
                 className="block text-sm font-medium text-gray-700"
               >
-                Slug
+                Slug*
               </label>
               <div className="mt-1 flex rounded-md shadow-sm">
                 <input
@@ -75,15 +108,13 @@ const Page = () => {
                   type="text"
                   placeholder="Slug"
                   name="slug"
-                  onInput={(e) =>
-                    setFormData({
-                      ...formData,
-                      [e.currentTarget.name]: e.currentTarget.value,
-                    })
-                  }
-                  value={formData.slug}
+                  onChange={formik.handleChange}
+                  value={formik.values.slug}
                 />
               </div>
+              {formik.touched.slug && formik.errors.slug && (
+                <div className="text-red-500">{formik.errors.slug}</div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
@@ -92,20 +123,15 @@ const Page = () => {
                   htmlFor="category"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Category
+                  Category*
                 </label>
                 <div className="mt-1">
                   <select
                     id="category"
-                    name="category"
+                    name="category_id"
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        [e.currentTarget.name]: e.currentTarget.value,
-                      })
-                    }
-                    value={formData.category}
+                    value={formik.values.category_id}
+                    onChange={formik.handleChange}
                   >
                     <option value="">Select a category</option>
                     {categories?.map((category) => (
@@ -114,6 +140,11 @@ const Page = () => {
                       </option>
                     ))}
                   </select>
+                  {formik.touched.category_id && formik.errors.category_id && (
+                    <div className="text-red-500">
+                      {formik.errors.category_id}
+                    </div>
+                  )}
                 </div>
               </div>
               <div>
@@ -121,7 +152,7 @@ const Page = () => {
                   htmlFor="tags"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Tags
+                  Tags*
                 </label>
                 <div className="mt-1">
                   <input
@@ -130,14 +161,12 @@ const Page = () => {
                     id="tags"
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                     placeholder="javascript, react, tutorial (comma separated)"
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        [e.currentTarget.name]: e.currentTarget.value,
-                      })
-                    }
-                    value={formData.tags}
+                    onChange={formik.handleChange}
+                    value={formik.values.tags}
                   />
+                  {formik.touched.tags && formik.errors.tags && (
+                    <div className="text-red-500">{formik.errors.tags}</div>
+                  )}
                 </div>
               </div>
             </div>
@@ -147,10 +176,13 @@ const Page = () => {
                 htmlFor="content"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Content
+                Content*
               </label>
               <div className="mt-1">
                 <Editor content={content} setContent={setContent}></Editor>
+                {formik.touched.content && formik.errors.content && (
+                  <div className="text-red-500">{formik.errors.content}</div>
+                )}
               </div>
             </div>
 
@@ -163,9 +195,16 @@ const Page = () => {
               </button>
               <button
                 type="submit"
-                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                disabled={submitting}
+                className={`inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white 
+    ${
+      submitting
+        ? "bg-indigo-400 cursor-not-allowed"
+        : "bg-indigo-600 hover:bg-indigo-700"
+    } 
+    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
               >
-                Save
+                {submitting ? "Saving..." : "Save"}
               </button>
             </div>
           </form>

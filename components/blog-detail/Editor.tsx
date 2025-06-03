@@ -52,7 +52,7 @@ const Editor: React.FC<EditorProps> = ({content, setContent}) => {
       }}
     >
       <RichTextEditor
-        output="text"
+        output="html"
         dark={false}
         content={content as any}
         onChangeContent={onValueChange}
